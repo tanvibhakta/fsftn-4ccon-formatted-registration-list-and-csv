@@ -50,7 +50,7 @@ for i in range(len(field)):
         msg += "** on Thursday, the 26th of January as a part of the 2nd National Conference, 4CCon.\n\nThe prerequisites for the workshop are:"
 
         #removes special characters
-        file_name = '/reports/'+''.join(e for e in workshop_name[0] if e.isalnum()) + '.csv'
+        file_name = './reports/'+''.join(e for e in workshop_name[0] if e.isalnum()) + '.csv'
 
         f = None
         #creates file using workshop name
