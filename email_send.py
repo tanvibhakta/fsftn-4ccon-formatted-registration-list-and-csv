@@ -1,4 +1,4 @@
-import sqlite3, smtplib
+import sqlite3, smtplib, os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -11,6 +11,7 @@ c = sqlite3.connect('db.sqlite3').cursor()
 #setting up the server
 #s = smtplib.SMTP('localhost')
 
+#to find who paid
 c.execute('SELECT * FROM tickets_tickets WHERE status==3 OR status==4;')
 field = c.fetchall()
 
@@ -21,25 +22,45 @@ for i in range(len(field)):
     order_type = field[i][6]
     ticket_id = field[i][5]
     workshop_id = field[i][17]
+    phone_no = field[i][10]
 
+    #start email
     msg = "Hey, "
     msg += name
 
 
     if (order_type == "bronze" or order_type == "silver" or order_type == "platinum"):
+
+        #get workshop's name from given id
         c.execute('SELECT title FROM proposals_proposal JOIN tickets_tickets ON proposals_proposal.id ==?;', (workshop_id, ))
         workshop_name = c.fetchone()
         msg += "\n\nThis is to remind you that you have registered for "
-        if workshop_id == None:
-            pass
+        if workshop_id == None: #balu case
+            workshop_name = ["dummy"]
         else:
             msg += workshop_name[0]
-
         msg += " on Thursday, the 26th of January as a part of the 2nd National Conference, 4CCon.\n\n"
 
+        #removes special characters
+        file_name = ''.join(e for e in workshop_name[0] if e.isalnum()) + '.csv'
+
+        f = None
+        #creates file using workshop name
+        if os.path.isfile(file_name):
+            f = open(file_name, 'a')
+        else:
+            f = open(file_name, 'w+')
+
+
+        var = ""
+        var += ticket_id +',' + name +',' + toaddr +',' + phone_no +',' + order_type
+        f.write(var)
+        f.close()
+
+        #get workshop's prerequisites from given id
         c.execute('SELECT prerequisites FROM proposals_proposal JOIN tickets_tickets ON proposals_proposal.id == ?;', (workshop_id, ))
         prerequisites = c.fetchone()
-        if workshop_id == None:
+        if workshop_id == None: # balu case
             pass
         else:
             msg += prerequisites[0]
@@ -48,6 +69,7 @@ for i in range(len(field)):
     if (order_type == "gold"):
         msg += "\n\nThis is to remind you that you have registered for 4CCOn, the 2nd National Conference of FSMI, starting on Friday, the 27th of January."
 
+    #messages are commom from this point onwards
     msg += "\n\n Your ticket id is "
     msg += str(ticket_id)
 
