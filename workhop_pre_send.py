@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 
 #python talking to the database
 c = sqlite3.connect('db.sqlite3').cursor()
+test = 'tanvibhakta@gmail.com'
 
 def send_mail(to,msg):
     from_addr = '4ccon@fsftn.org'
@@ -13,7 +14,7 @@ def send_mail(to,msg):
     print smtpserver.starttls()
     smtpserver.ehlo() # extra characters to permit edit
     smtpserver.login(from_addr, passwd)
-    header = 'To:' + to + '\n' + 'From: ' + from_addr + '\n' + 'Subject: A heads up on your workshop!\n'
+    header = 'To:' + to + '\n' + 'From: ' + from_addr + '\n' + 'Subject: Regarding a heads up on your workshop!\n'
     msg = header + msg
     smtpserver.sendmail(from_addr, to, msg)
     print 'done!'
@@ -24,7 +25,7 @@ workshop_id_list = [22, 48, 14]
 
 for workshop_id in workshop_id_list:
 
-    c.execute('SELECT * FROM tickets_tickets JOIN proposals_proposal ON workshop_id==proposals_proposal.id WHERE proposals_proposal.id=?;', (workshop_id, ))
+    c.execute('SELECT * FROM tickets_tickets JOIN proposals_proposal ON workshop_id==proposals_proposal.id WHERE proposals_proposal.id=? and (tickets_tickets.status==1 or tickets_tickets.status==2);', (workshop_id, ))
     field = c.fetchall()
 
     for i in range(len(field)):
@@ -33,52 +34,19 @@ for workshop_id in workshop_id_list:
         order_type = field[i][6]
         workshop_id = field[i][17]
         phone_no = field[i][10]
+        status = field[i][12]
+        print workshop_id
+        print status
 
         #start email
-        msg = "Hey,\n\nFor your workshop on "
+        msg = "Hey,\n\nKindly disregard the previous email. We are very sorry for any inconvenience caused. "
 
-        #get workshop's name from_addr given id
-        c.execute('SELECT title FROM proposals_proposal WHERE id ==?;', (workshop_id, ))
-        workshop_name = c.fetchone()
-        if workshop_id == None: #balu case
-            workshop_name = ["dummy"]
-        else:
-            msg += workshop_name[0]
-        msg += " here's some information we just received from the speaker\n\n "
 
-        #removes special characters
-        #file_name = './reports/'+''.join(e for e in workshop_name[0] if e.isalnum()) + '.csv'
-
-        # f = None
-        # #creates file using workshop name
-        # if os.path.isfile(file_name):
-        #     f = open(file_name, 'a')
-        # else:
-        #     f = open(file_name, 'w+')
-        #
-
-        # var = ""
-        # var += ticket_id +',' + name +',' + toaddr +',' + phone_no +',' + order_type
-        # f.write(var)
-        # f.close()
-
-        #get workshop's prerequisites given id
-        c.execute('SELECT prerequisites FROM proposals_proposal WHERE id == ?;', (workshop_id, ))
-        prerequisites = c.fetchone()
-        if workshop_id == None: # balu case
-            pass
-        else:
-            msg += prerequisites[0]
-
-        msg += """\n\nWe look forward to seeing you at 4CCon!
-
+        msg += """\n\n
     Regards,
     FSMI
     4ccon.fsmi.in
 
-    Srravya : +91 9962943247
-    Anand : +91 9043475346
-    4ccon@fsftn.org
-    044 -43504670 """
+     """
 
-        send_mail(toaddr, msg)
+        #send_mail(test, msg)
